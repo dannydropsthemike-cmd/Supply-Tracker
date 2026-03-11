@@ -1,6 +1,6 @@
 {
   "name": "Filament Tracker",
-  "short_name": "Filament",
+  "short_name": "Filament-Tracker",
   "description": "3D Printing Filament Inventory Tracker",
   "start_url": "/Filament-Tracker/",
   "display": "standalone",
