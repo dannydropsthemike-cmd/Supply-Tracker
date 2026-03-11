@@ -1,11 +1,11 @@
 {
-  "name": "Filament Vault",
-  "short_name": "FilaVault",
+  "name": "Filament Tracker",
+  "short_name": "Filament",
   "description": "3D Printing Filament Inventory Tracker",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#0a0a0f",
-  "theme_color": "#0a0a0f",
+  "background_color": "#F5EDD8",
+  "theme_color": "#F5EDD8",
   "orientation": "portrait",
   "icons": [
     {

@@ -5,18 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="FilaVault" />
-  <meta name="theme-color" content="#0a0a0f" />
+  <meta name="apple-mobile-web-app-title" content="Filament Tracker" />
+  <meta name="theme-color" content="#F5EDD8" />
 
-  <title>Filament Vault</title>
+  <title>Filament Tracker</title>
 
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- QR Code Generation (offline-capable via SW cache) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- QR Code Scanning -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
@@ -26,15 +24,25 @@
   <!-- ═══ HEADER ══════════════════════════════════════════════ -->
   <header id="header">
     <div class="header-logo">
-      <div class="logo-icon">🧵</div>
+      <div class="logo-icon">
+        <!-- Inline SVG: lowercase "i" + sage underline, terracotta on cream -->
+        <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="36" height="36" rx="8" fill="#9B6B5A"/>
+          <!-- dot -->
+          <circle cx="18" cy="10" r="2.8" fill="#F5EDD8"/>
+          <!-- stem -->
+          <rect x="15.2" y="15" width="5.6" height="13" rx="2.5" fill="#F5EDD8"/>
+          <!-- sage underline swoosh -->
+          <path d="M7 31 Q18 28.5 29 31" stroke="#8BA888" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
       <div>
-        <span class="logo-text">FilaVault</span>
-        <span class="logo-sub">Filament Tracker</span>
+        <span class="logo-text">Filament Tracker</span>
+        <span class="logo-sub">Inventory Vault</span>
       </div>
     </div>
     <div class="header-actions">
       <button class="icon-btn" id="btn-add" title="Add Filament" aria-label="Add filament">＋</button>
-      <button class="icon-btn" id="btn-alerts" title="Alerts" aria-label="View alerts">🔔</button>
     </div>
   </header>
 
@@ -46,11 +54,7 @@
     </div>
     <div class="nav-tab" data-view="scan">
       <span class="tab-icon">📷</span>
-      Scan
-    </div>
-    <div class="nav-tab" data-view="alerts">
-      <span class="tab-icon">⚠️</span>
-      Alerts
+      Scan QR
     </div>
   </nav>
 
@@ -60,10 +64,20 @@
     <!-- ─── INVENTORY VIEW ─────────────────────────────────── -->
     <section id="view-inventory" class="view active">
 
-      <!-- Stats Bar -->
-      <div class="inventory-header">
-        <span class="section-title">Stock Overview</span>
+      <!-- Notification permission banner (shown when not yet granted) -->
+      <div class="notif-banner" id="notif-banner" style="display:none" role="button" aria-label="Enable notifications">
+        <div class="notif-banner-icon">🔔</div>
+        <div class="notif-banner-text">
+          <div class="notif-banner-title">Enable Low-Stock Alerts</div>
+          <div class="notif-banner-sub">Get notified when filament runs low</div>
+        </div>
+        <div class="notif-banner-action">Allow →</div>
       </div>
+
+      <div class="inventory-header">
+        <span class="section-title">Your Collection</span>
+      </div>
+
       <div class="stats-bar">
         <div class="stat-item ok">
           <span class="stat-value" id="stat-total">0</span>
@@ -79,24 +93,20 @@
         </div>
       </div>
 
-      <!-- Search -->
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
         <input type="search" id="search-input" placeholder="Search filaments…" autocomplete="off" />
       </div>
 
-      <!-- Filter Chips -->
       <div class="filter-row" id="filter-row">
         <div class="chip active" data-filter="all">All</div>
-        <!-- Material chips injected dynamically -->
       </div>
 
-      <!-- Filament Cards -->
       <div class="filament-list" id="filament-list">
         <div class="empty-state">
           <div class="empty-icon">🧵</div>
           <div class="empty-title">No Filaments Yet</div>
-          <div class="empty-sub">Tap the <strong>＋</strong> button to add your first filament to the vault.</div>
+          <div class="empty-sub">Tap <strong>＋</strong> to add your first filament to the vault.</div>
         </div>
       </div>
     </section>
@@ -104,9 +114,7 @@
     <!-- ─── SCAN VIEW ───────────────────────────────────────── -->
     <section id="view-scan" class="view">
       <div class="scan-viewport">
-        <!-- html5-qrcode mounts here -->
         <div id="qr-reader"></div>
-        <!-- Visual overlay -->
         <div class="scan-overlay" id="scan-overlay">
           <div class="scan-frame">
             <div class="scan-corner tl"></div>
@@ -116,16 +124,12 @@
             <div class="scan-line"></div>
           </div>
         </div>
-        <div class="scan-hint">
-          <p>ALIGN QR CODE WITHIN FRAME</p>
-        </div>
+        <div class="scan-hint"><p>Align QR Code Within Frame</p></div>
       </div>
 
-      <!-- Scanned result panel -->
       <div class="scan-result-panel" id="scan-result-panel">
         <div class="scan-result-name" id="scan-result-name">—</div>
         <div class="scan-result-meta" id="scan-result-meta">—</div>
-
         <div class="qty-adjuster">
           <button class="qty-btn" id="scan-qty-minus">−</button>
           <div>
@@ -134,7 +138,6 @@
           </div>
           <button class="qty-btn" id="scan-qty-plus">＋</button>
         </div>
-
         <div class="scan-actions">
           <button class="btn" id="scan-cancel-btn">Cancel</button>
           <button class="btn primary" id="scan-save-btn">Save</button>
@@ -142,21 +145,13 @@
       </div>
     </section>
 
-    <!-- ─── ALERTS VIEW ─────────────────────────────────────── -->
-    <section id="view-alerts" class="view">
-      <div class="inventory-header">
-        <span class="section-title">Low Stock Alerts</span>
-      </div>
-      <div class="filament-list" id="alerts-list"></div>
-    </section>
-
   </main>
-</div><!-- #app -->
+</div>
 
-<!-- ═══ TOAST CONTAINER ════════════════════════════════════ -->
+<!-- ═══ TOASTS ══════════════════════════════════════════════ -->
 <div class="toast-container" id="toast-container"></div>
 
-<!-- ═══ ADD / EDIT FILAMENT MODAL ══════════════════════════ -->
+<!-- ═══ ADD / EDIT MODAL ════════════════════════════════════ -->
 <div class="modal-overlay" id="modal-add">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -166,12 +161,10 @@
     </div>
     <div class="form-body">
       <input type="hidden" id="edit-id" />
-
       <div class="form-field">
         <label class="form-label" for="f-name">Name / Label</label>
         <input class="form-input" type="text" id="f-name" placeholder="e.g. Sunset Orange PLA" autocomplete="off" />
       </div>
-
       <div class="form-row">
         <div class="form-field">
           <label class="form-label" for="f-brand">Brand</label>
@@ -191,17 +184,15 @@
           </select>
         </div>
       </div>
-
       <div class="form-field">
         <label class="form-label">Color</label>
         <div class="color-picker-wrap">
           <input class="form-input" type="text" id="f-color-name" placeholder="Color name (e.g. Orange)" autocomplete="off" />
-          <div class="color-preview">
-            <input type="color" id="f-color-hex" value="#ff6b35" title="Pick color" />
+          <div class="color-preview" id="color-preview-box">
+            <input type="color" id="f-color-hex" value="#9B6B5A" title="Pick color" />
           </div>
         </div>
       </div>
-
       <div class="form-row">
         <div class="form-field">
           <label class="form-label" for="f-qty">Current Spools</label>
@@ -212,23 +203,20 @@
           <input class="form-input" type="number" id="f-min" placeholder="2" min="0" inputmode="numeric" />
         </div>
       </div>
-
       <div class="form-field">
         <label class="form-label" for="f-link">Buy Link (URL)</label>
         <input class="form-input" type="url" id="f-link" placeholder="https://amazon.com/…" autocomplete="off" />
       </div>
-
       <div class="form-field">
         <label class="form-label" for="f-notes">Notes</label>
         <input class="form-input" type="text" id="f-notes" placeholder="Optional notes…" autocomplete="off" />
       </div>
-
       <button class="form-submit" id="form-submit-btn">Add to Vault</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ QR CODE MODAL ══════════════════════════════════════ -->
+<!-- ═══ QR CODE MODAL ═══════════════════════════════════════ -->
 <div class="modal-overlay" id="modal-qr">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -245,19 +233,6 @@
         <button class="btn primary" id="qr-done-btn">Done</button>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- ═══ DETAIL / EDIT MODAL ════════════════════════════════ -->
-<div class="modal-overlay" id="modal-detail">
-  <div class="modal-sheet">
-    <div class="modal-handle"></div>
-    <div class="detail-color-bar" id="detail-color-bar"></div>
-    <div class="modal-header">
-      <span class="modal-title" id="detail-modal-title">Details</span>
-      <button class="modal-close" id="modal-detail-close">✕</button>
-    </div>
-    <div id="detail-content"></div>
   </div>
 </div>
 
