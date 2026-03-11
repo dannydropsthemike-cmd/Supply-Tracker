@@ -1,8 +1,9 @@
 {
-  "name": "Filament Tracker",
+  "name": "Filament-Tracker",
   "short_name": "Filament-Tracker",
   "description": "3D Printing Filament Inventory Tracker",
-  "start_url": "/Filament-Tracker/",
+  "start_url": "https://dannydropsthemike-cmd.github.io/Filament-Tracker/",
+  "scope": "https://dannydropsthemike-cmd.github.io/Filament-Tracker/",
   "display": "standalone",
   "background_color": "#F5EDD8",
   "theme_color": "#F5EDD8",
