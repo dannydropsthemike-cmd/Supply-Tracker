@@ -3,15 +3,15 @@
 // Caches all assets for full offline functionality
 // ============================================================
 
-const CACHE_NAME = 'filament-vault-v3';
+const CACHE_NAME = 'filament-vault-v4';
 
 // All assets to cache for offline use
 const ASSETS_TO_CACHE = [
-  '/dannydropsthemike-cmd/',
-  '/dannydropsthemike-cmd/index.html',
-  '/dannydropsthemike-cmd/app.js',
-  '/dannydropsthemike-cmd/styles.css',
-  '/dannydropsthemike-cmd/manifest.json',
+  '/Filament-Tracker/',
+  '/Filament-Tracker/index.html',
+  '/Filament-Tracker/app.js',
+  '/Filament-Tracker/styles.css',
+  '/Filament-Tracker/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
   'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'
 ];

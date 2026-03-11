@@ -2,7 +2,7 @@
   "name": "Filament Tracker",
   "short_name": "Filament",
   "description": "3D Printing Filament Inventory Tracker",
-  "start_url": "/dannydropsthemike-cmd/",
+  "start_url": "/Filament-Tracker/",
   "display": "standalone",
   "background_color": "#F5EDD8",
   "theme_color": "#F5EDD8",
