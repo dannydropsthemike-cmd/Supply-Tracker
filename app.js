@@ -160,7 +160,7 @@ function removeToast(t) {
 // STATE
 // ════════════════════════════════════════════════════════════
 let allFilaments = [], activeFilter = 'all', searchQuery = '';
-let editingId = null, qrDisplayId = null;
+let editingId = null;
 let modalScanner = null, modalScannerRunning = false;
 
 // ════════════════════════════════════════════════════════════
@@ -201,10 +201,13 @@ function renderCard(f) {
   const isLow  = f.qty > 0 && f.qty <= f.minStock;
   const isOut  = f.qty <= 0;
   const cls    = isOut ? 'out-of-stock' : isLow ? 'low-stock' : '';
+  const buyBtn = (isLow || isOut) && f.buyLink
+    ? `<a href="${esc(f.buyLink)}" target="_blank" class="buy-link-btn">${isOut ? '🛒 Order Now' : '🛒 Buy More'}</a>`
+    : '';
   const strip  = isOut
-    ? `<div class="card-status-strip">🚨 Out of Stock — order needed</div>`
+    ? `<div class="card-status-strip">🚨 Out of Stock — order needed${buyBtn ? ' · ' + buyBtn : ''}</div>`
     : isLow
-    ? `<div class="card-status-strip">⚠️ Low — ${f.qty} of ${f.minStock} min remaining</div>`
+    ? `<div class="card-status-strip">⚠️ Low — ${f.qty} of ${f.minStock} min remaining${buyBtn ? ' · ' + buyBtn : ''}</div>`
     : '';
   const matCls = getMaterialClass(f.material);
 
@@ -235,7 +238,6 @@ function renderCard(f) {
 
       <div class="card-actions">
         <button class="card-action-btn" data-action="toggle-adjust" data-id="${f.id}">⚡ Adjust</button>
-        <button class="card-action-btn" data-action="qr" data-id="${f.id}">▣ QR</button>
         <button class="card-action-btn" data-action="edit" data-id="${f.id}">✏️ Edit</button>
         <button class="card-action-btn danger" data-action="delete" data-id="${f.id}">🗑</button>
       </div>
@@ -248,7 +250,6 @@ function attachCardListeners() {
       e.stopPropagation();
       const { action, id } = btn.dataset;
       if      (action === 'toggle-adjust') toggleAdjust(id);
-      else if (action === 'qr')            openQRModal(id);
       else if (action === 'edit')          openEditModal(id);
       else if (action === 'delete')        handleDelete(id);
       else if (action === 'inline-minus')  adjustQty(id, -1);
@@ -422,220 +423,6 @@ document.getElementById('form-submit-btn').addEventListener('click', async () =>
   await renderInventory();
   alertIfLowStock(f);
   showToast(editingId ? 'Updated' : 'Added', `${f.name} ${editingId?'updated':'added to the vault'}.`, 'success');
-});
-
-// ════════════════════════════════════════════════════════════
-// QR MODAL — two states: show code / scanner
-// ════════════════════════════════════════════════════════════
-const modalQR = document.getElementById('modal-qr');
-
-document.getElementById('modal-qr-close').addEventListener('click', closeQRModal);
-modalQR.addEventListener('click', e => { if (e.target === modalQR) closeQRModal(); });
-
-// Toggle to scanner — opens fullscreen overlay instead of embedding in modal
-document.getElementById('qr-scan-toggle-btn').addEventListener('click', () => {
-  closeQRModal();
-  openScannerOverlay();
-});
-document.getElementById('qr-back-to-show-btn').addEventListener('click', () => switchQRState('show'));
-
-function switchQRState(state) {
-  document.getElementById('qr-state-show').style.display = state === 'show' ? 'block' : 'none';
-  document.getElementById('qr-state-scan').style.display = state === 'scan'  ? 'block' : 'none';
-  document.getElementById('qr-scan-result').style.display = 'none';
-  document.getElementById('qr-scan-back-row').style.display = state === 'scan' ? 'block' : 'none';
-  document.getElementById('qr-modal-title').textContent = state === 'scan' ? 'Scan QR Code' : 'QR Code';
-}
-
-async function openQRModal(id) {
-  const f = await getFilament(id);
-  if (!f) return;
-  qrDisplayId = id;
-
-  document.getElementById('qr-display-name').textContent = f.name;
-  document.getElementById('qr-display-meta').textContent =
-    `${f.brand ? f.brand + ' · ' : ''}${f.material}${f.colorName ? ' · ' + f.colorName : ''}`;
-
-  // Generate QR code — fresh inner div prevents duplicate canvas+img render
-  const wrap = document.getElementById('qr-display-canvas');
-  wrap.innerHTML = '';
-  const qrDiv = document.createElement('div');
-  wrap.appendChild(qrDiv);
-  try {
-    new QRCode(qrDiv, {
-      text:         `filavault:${id}`,
-      width:        220, height: 220,
-      colorDark:    '#3D2B1F',
-      colorLight:   '#FDFAF3',
-      correctLevel: QRCode.CorrectLevel.M,
-    });
-    // QRCode.js renders both a canvas AND an img — hide the img duplicate
-    setTimeout(() => {
-      const img = qrDiv.querySelector('img');
-      if (img) img.style.display = 'none';
-    }, 80);
-  } catch(e) {
-    wrap.textContent = 'QR library not cached — visit once online first.';
-  }
-
-  // Reset to show state
-  switchQRState('show');
-  modalQR.classList.add('visible');
-}
-
-function closeQRModal() {
-  modalQR.classList.remove('visible');
-  qrDisplayId = null;
-  // Reset state
-  document.getElementById('qr-state-show').style.display = 'block';
-  document.getElementById('qr-state-scan').style.display = 'none';
-  document.getElementById('qr-scan-result').style.display = 'none';
-}
-
-// ── Save to Photos via Web Share API ───────────────────────
-document.getElementById('qr-download-btn').addEventListener('click', async () => {
-  const canvas  = document.getElementById('qr-display-canvas');
-  const imgEl   = canvas.querySelector('canvas') || canvas.querySelector('img');
-  if (!imgEl) { showToast('Error', 'QR code not generated yet.', 'error'); return; }
-
-  // Get data URL
-  let dataUrl;
-  if (imgEl.tagName === 'CANVAS') {
-    dataUrl = imgEl.toDataURL('image/png');
-  } else {
-    // Convert img src to canvas to get data URL
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = 220; tempCanvas.height = 220;
-    const ctx = tempCanvas.getContext('2d');
-    ctx.drawImage(imgEl, 0, 0, 220, 220);
-    dataUrl = tempCanvas.toDataURL('image/png');
-  }
-
-  // Try Web Share API first (iOS → saves to Photos)
-  if (navigator.share && navigator.canShare) {
-    try {
-      const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], `filament-qr-${qrDisplayId}.png`, { type: 'image/png' });
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Filament QR Code' });
-        showToast('Shared!', 'You can save it to Photos from the share sheet.', 'success');
-        return;
-      }
-    } catch(e) {
-      if (e.name !== 'AbortError') console.warn('[Share]', e);
-    }
-  }
-
-  // Fallback: trigger download
-  const link = document.createElement('a');
-  link.download = `filament-qr-${qrDisplayId}.png`;
-  link.href = dataUrl;
-  link.click();
-  showToast('Downloaded', 'QR code saved.', 'success');
-});
-
-// ════════════════════════════════════════════════════════════
-// FULLSCREEN SCANNER OVERLAY
-// Lives outside any modal/scroll container for reliable init
-// ════════════════════════════════════════════════════════════
-let fsScanner = null, fsScannerRunning = false;
-let fsScanFilament = null, fsScanQty = 0;
-
-function openScannerOverlay() {
-  const overlay = document.getElementById('scanner-overlay');
-  overlay.style.display = 'flex';
-  document.getElementById('scanner-result').style.display = 'none';
-  // Small delay so the DOM is painted and sized before init
-  setTimeout(startFsScanner, 150);
-}
-
-function closeScannerOverlay() {
-  stopFsScanner();
-  document.getElementById('scanner-overlay').style.display = 'none';
-  document.getElementById('scanner-result').style.display = 'none';
-}
-
-async function startFsScanner() {
-  if (fsScannerRunning) return;
-  // Clear any previous instance
-  const container = document.getElementById('fullscreen-qr-reader');
-  container.innerHTML = '';
-  try {
-    fsScanner = new Html5Qrcode('fullscreen-qr-reader');
-    await fsScanner.start(
-      { facingMode: 'environment' },
-      { fps: 15, qrbox: { width: 240, height: 240 } },
-      onFsScanSuccess,
-      () => {} // ignore per-frame errors
-    );
-    fsScannerRunning = true;
-    console.log('[Scanner] Started');
-  } catch(e) {
-    console.error('[Scanner]', e);
-    showToast('Camera Error', 'Allow camera access in Settings and try again.', 'error');
-    closeScannerOverlay();
-  }
-}
-
-async function stopFsScanner() {
-  if (!fsScannerRunning || !fsScanner) return;
-  try { await fsScanner.stop(); } catch(e) { console.warn('[Scanner stop]', e); }
-  fsScannerRunning = false;
-  fsScanner = null;
-}
-
-async function onFsScanSuccess(decoded) {
-  // Pause scanner while we handle result
-  try { if (fsScanner) await fsScanner.pause(true); } catch(e) {}
-  if (navigator.vibrate) navigator.vibrate([40, 20, 40]);
-
-  if (!decoded.startsWith('filavault:')) {
-    showToast('Unknown QR', 'Not a Filament-Tracker QR code.', 'warn');
-    setTimeout(() => { try { fsScanner && fsScanner.resume(); } catch(e){} }, 2000);
-    return;
-  }
-
-  const id = decoded.replace('filavault:', '');
-  const f  = await getFilament(id);
-  if (!f) {
-    showToast('Not Found', 'This filament is not in your vault.', 'error');
-    setTimeout(() => { try { fsScanner && fsScanner.resume(); } catch(e){} }, 2000);
-    return;
-  }
-
-  fsScanFilament = f;
-  fsScanQty = f.qty;
-
-  document.getElementById('scanner-result-name').textContent = f.name;
-  document.getElementById('scanner-result-meta').textContent =
-    `${f.brand ? f.brand + ' · ' : ''}${f.material} · Currently ${f.qty} spool${f.qty!==1?'s':''}`;
-  document.getElementById('scanner-qty-display').textContent = fsScanQty;
-  document.getElementById('scanner-result').style.display = 'block';
-}
-
-// Scanner overlay controls
-document.getElementById('scanner-close-btn').addEventListener('click', closeScannerOverlay);
-
-document.getElementById('scanner-qty-minus').addEventListener('click', () => {
-  fsScanQty = Math.max(0, fsScanQty - 1);
-  document.getElementById('scanner-qty-display').textContent = fsScanQty;
-});
-document.getElementById('scanner-qty-plus').addEventListener('click', () => {
-  fsScanQty++;
-  document.getElementById('scanner-qty-display').textContent = fsScanQty;
-});
-document.getElementById('scanner-back-btn').addEventListener('click', () => {
-  document.getElementById('scanner-result').style.display = 'none';
-  try { fsScanner && fsScanner.resume(); } catch(e) {}
-});
-document.getElementById('scanner-save-btn').addEventListener('click', async () => {
-  if (!fsScanFilament) return;
-  fsScanFilament.qty = fsScanQty;
-  await saveFilament(fsScanFilament);
-  await renderInventory();
-  alertIfLowStock(fsScanFilament);
-  showToast('Updated', `${fsScanFilament.name} → ${fsScanQty} spool${fsScanQty!==1?'s':''}`, 'success');
-  closeScannerOverlay();
 });
 
 // ════════════════════════════════════════════════════════════
