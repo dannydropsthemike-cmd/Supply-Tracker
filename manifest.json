@@ -1,7 +1,7 @@
 {
-  "name": "Filament-Tracker",
-  "short_name": "Filament-Tracker",
-  "description": "3D Printing Filament Inventory Tracker",
+  "name": "Supply Tracker",
+  "short_name": "Supply Tracker",
+  "description": "Business Materials & Supply Inventory",
   "start_url": "https://dannydropsthemike-cmd.github.io/Filament-Tracker/",
   "scope": "https://dannydropsthemike-cmd.github.io/Filament-Tracker/",
   "display": "standalone",
@@ -9,17 +9,7 @@
   "theme_color": "#F5EDD8",
   "orientation": "portrait",
   "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Filament-Tracker" />
+  <meta name="apple-mobile-web-app-title" content="Supply Tracker" />
   <meta name="theme-color" content="#F5EDD8" />
-  <title>Filament-Tracker</title>
+  <title>Supply Tracker</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -27,12 +28,12 @@
         </svg>
       </div>
       <div>
-        <span class="logo-text">Filament-Tracker</span>
-        <span class="logo-sub">Inventory Vault</span>
+        <span class="logo-text">Supply Tracker</span>
+        <span class="logo-sub">Business Inventory</span>
       </div>
     </div>
     <div class="header-actions">
-      <button class="icon-btn" id="btn-add" aria-label="Add filament">＋</button>
+      <button class="icon-btn" id="btn-add" aria-label="Add item">＋</button>
     </div>
   </header>
 
@@ -44,19 +45,19 @@
       <div class="notif-banner-icon">🔔</div>
       <div class="notif-banner-text">
         <div class="notif-banner-title">Enable Low-Stock Alerts</div>
-        <div class="notif-banner-sub">Get notified throughout the day when filament runs low</div>
+        <div class="notif-banner-sub">Get notified when supplies are running low</div>
       </div>
       <div class="notif-banner-action">Allow →</div>
     </div>
 
     <!-- Stats -->
     <div class="inventory-header">
-      <span class="section-title">Your Collection</span>
+      <span class="section-title">Your Supplies</span>
     </div>
     <div class="stats-bar">
       <div class="stat-item ok">
         <span class="stat-value" id="stat-total">0</span>
-        <span class="stat-label">Total</span>
+        <span class="stat-label">Items</span>
       </div>
       <div class="stat-item warn">
         <span class="stat-value" id="stat-low">0</span>
@@ -64,14 +65,14 @@
       </div>
       <div class="stat-item">
         <span class="stat-value" id="stat-types">0</span>
-        <span class="stat-label">Materials</span>
+        <span class="stat-label">Categories</span>
       </div>
     </div>
 
     <!-- Search -->
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
-      <input type="search" id="search-input" placeholder="Search filaments…" autocomplete="off" />
+      <input type="search" id="search-input" placeholder="Search supplies…" autocomplete="off" />
     </div>
 
     <!-- Filter chips -->
@@ -82,9 +83,9 @@
     <!-- Cards -->
     <div class="filament-list" id="filament-list">
       <div class="empty-state">
-        <div class="empty-icon">🧵</div>
-        <div class="empty-title">No Filaments Yet</div>
-        <div class="empty-sub">Tap <strong>＋</strong> to add your first filament.</div>
+        <div class="empty-icon">📦</div>
+        <div class="empty-title">No Supplies Yet</div>
+        <div class="empty-sub">Tap <strong>＋</strong> to add your first item.</div>
       </div>
     </div>
 
@@ -99,117 +100,91 @@
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-header">
-      <span class="modal-title" id="modal-add-title">Add Filament</span>
+      <span class="modal-title" id="modal-add-title">Add Item</span>
       <button class="modal-close" id="modal-add-close">✕</button>
     </div>
     <div class="form-body">
       <input type="hidden" id="edit-id" />
+
       <div class="form-field">
-        <label class="form-label" for="f-name">Name / Label</label>
-        <input class="form-input" type="text" id="f-name" placeholder="e.g. Matte Black PETG" autocomplete="off" />
+        <label class="form-label" for="f-name">Item Name</label>
+        <input class="form-input" type="text" id="f-name" placeholder="e.g. Bubble Mailers 6x9" autocomplete="off" />
       </div>
+
       <div class="form-row">
         <div class="form-field">
-          <label class="form-label" for="f-brand">Brand</label>
-          <input class="form-input" type="text" id="f-brand" placeholder="e.g. Sunlu" autocomplete="off" />
+          <label class="form-label" for="f-brand">Supplier / Brand</label>
+          <input class="form-input" type="text" id="f-brand" placeholder="e.g. ULINE" autocomplete="off" />
         </div>
         <div class="form-field">
-          <label class="form-label" for="f-material">Material</label>
+          <label class="form-label" for="f-material">Category</label>
           <select class="form-select" id="f-material">
-            <option value="PLA">PLA</option>
-            <option value="ABS">ABS</option>
-            <option value="PETG">PETG</option>
-            <option value="TPU">TPU</option>
-            <option value="ASA">ASA</option>
-            <option value="Nylon">Nylon</option>
-            <option value="Resin">Resin</option>
+            <option value="Packaging">Packaging</option>
+            <option value="Shipping">Shipping</option>
+            <option value="Labels">Labels</option>
+            <option value="Tape">Tape</option>
+            <option value="Boxes">Boxes</option>
+            <option value="Bags">Bags</option>
+            <option value="Filament">Filament</option>
+            <option value="Tools">Tools</option>
+            <option value="Printing">Printing</option>
+            <option value="Office">Office</option>
             <option value="Other">Other</option>
           </select>
         </div>
       </div>
+
       <div class="form-field">
-        <label class="form-label">Color</label>
+        <label class="form-label">Color / Variant</label>
         <div class="color-picker-wrap">
-          <input class="form-input" type="text" id="f-color-name" placeholder="Color name (e.g. Black)" autocomplete="off" />
+          <input class="form-input" type="text" id="f-color-name" placeholder="e.g. White, 6x9, 100pk" autocomplete="off" />
           <div class="color-preview" id="color-preview-box">
             <input type="color" id="f-color-hex" value="#9B6B5A" />
           </div>
         </div>
       </div>
+
       <div class="form-row">
         <div class="form-field">
-          <label class="form-label" for="f-qty">Current Spools</label>
+          <label class="form-label" for="f-qty">Current Qty</label>
           <input class="form-input" type="number" id="f-qty" placeholder="0" min="0" inputmode="numeric" />
         </div>
         <div class="form-field">
           <label class="form-label" for="f-min">Minimum Stock</label>
-          <input class="form-input" type="number" id="f-min" placeholder="2" min="0" inputmode="numeric" />
+          <input class="form-input" type="number" id="f-min" placeholder="5" min="0" inputmode="numeric" />
         </div>
       </div>
+
+      <div class="form-field">
+        <label class="form-label" for="f-unit">Unit</label>
+        <select class="form-select" id="f-unit">
+          <option value="units">Units</option>
+          <option value="rolls">Rolls</option>
+          <option value="packs">Packs</option>
+          <option value="boxes">Boxes</option>
+          <option value="bags">Bags</option>
+          <option value="sheets">Sheets</option>
+          <option value="spools">Spools</option>
+          <option value="lbs">Lbs</option>
+          <option value="ft">Ft</option>
+          <option value="pairs">Pairs</option>
+        </select>
+      </div>
+
       <div class="form-field">
         <label class="form-label" for="f-link">Buy Link (URL)</label>
         <input class="form-input" type="url" id="f-link" placeholder="https://amazon.com/…" autocomplete="off" />
       </div>
+
       <div class="form-field">
         <label class="form-label" for="f-notes">Notes</label>
         <input class="form-input" type="text" id="f-notes" placeholder="Optional notes…" autocomplete="off" />
       </div>
-      <button class="form-submit" id="form-submit-btn">Add to Vault</button>
+
+      <button class="form-submit" id="form-submit-btn">Add Item</button>
     </div>
   </div>
 </div>
-
-    <!-- State 1: Show QR code -->
-    <div id="qr-state-show" class="qr-modal-content">
-      <div id="qr-display-canvas"></div>
-      <div class="qr-filament-name" id="qr-display-name">—</div>
-      <div class="qr-filament-meta" id="qr-display-meta">—</div>
-      <div class="qr-actions">
-        <button class="btn" id="qr-download-btn">📷 Save to Photos</button>
-        <button class="btn primary" id="qr-scan-toggle-btn">Scan QR →</button>
-      </div>
-    </div>
-
-    <!-- State 2: Scanner -->
-    <div id="qr-state-scan" style="display:none">
-      <div class="qr-scan-viewport">
-        <div id="qr-modal-reader"></div>
-        <div class="scan-overlay">
-          <div class="scan-frame">
-            <div class="scan-corner tl"></div>
-            <div class="scan-corner tr"></div>
-            <div class="scan-corner bl"></div>
-            <div class="scan-corner br"></div>
-            <div class="scan-line"></div>
-          </div>
-        </div>
-        <div class="scan-hint"><p>Align QR Code Within Frame</p></div>
-      </div>
-      <!-- Scanned result panel inside modal -->
-      <div id="qr-scan-result" class="qr-scan-result" style="display:none">
-        <div class="scan-result-name" id="qr-scan-name">—</div>
-        <div class="scan-result-meta" id="qr-scan-meta">—</div>
-        <div class="qty-adjuster">
-          <button class="qty-btn" id="qr-qty-minus">−</button>
-          <div>
-            <div class="qty-display" id="qr-qty-display">0</div>
-            <div class="qty-unit">spools</div>
-          </div>
-          <button class="qty-btn" id="qr-qty-plus">＋</button>
-        </div>
-        <div class="scan-actions">
-          <button class="btn" id="qr-scan-back-btn">← Back</button>
-          <button class="btn primary" id="qr-scan-save-btn">Save</button>
-        </div>
-      </div>
-      <div class="qr-actions" id="qr-scan-back-row" style="padding:16px 20px">
-        <button class="btn" id="qr-back-to-show-btn">← Back to QR Code</button>
-      </div>
-    </div>
-
-  </div>
-</div>
-
 
 <script src="app.js"></script>
 </body>

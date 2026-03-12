@@ -3,7 +3,7 @@
 // Caches all assets for full offline functionality
 // ============================================================
 
-const CACHE_NAME = 'filament-vault-v12';
+const CACHE_NAME = 'filament-vault-v13';
 
 // All assets to cache for offline use
 const ASSETS_TO_CACHE = [
