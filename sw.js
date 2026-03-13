@@ -1,15 +1,15 @@
 // Service Worker — Supply Tracker PWA
 
-const CACHE_NAME = 'supply-tracker-v1';
+const CACHE_NAME = 'supply-tracker-v99';
 
 const ASSETS = [
-  '/Filament-Tracker/',
-  '/Filament-Tracker/index.html',
-  '/Filament-Tracker/app.js',
-  '/Filament-Tracker/styles.css',
-  '/Filament-Tracker/manifest.json',
-  '/Filament-Tracker/icons/icon-192.png',
-  '/Filament-Tracker/icons/icon-512.png',
+  '/Supply-Tracker/',
+  '/Supply-Tracker/index.html',
+  '/Supply-Tracker/app.js',
+  '/Supply-Tracker/styles.css',
+  '/Supply-Tracker/manifest.json',
+  '/Supply-Tracker/icons/icon-192.png',
+  '/Supply-Tracker/icons/icon-512.png',
 ];
 
 self.addEventListener('install', event => {
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         return response;
-      }).catch(() => caches.match('/Filament-Tracker/index.html'));
+      }).catch(() => caches.match('/Supply-Tracker/index.html'));
     })
   );
 });
